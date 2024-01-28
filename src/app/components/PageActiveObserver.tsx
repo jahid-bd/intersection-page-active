@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { MapInteractionCSS } from 'react-map-interaction';
 
 const data = [
   {
@@ -42,6 +43,9 @@ const PageActiveObserver = () => {
     });
   };
 
+  console.log(containerRefs);
+  console.log(isVisible);
+
   const options = {
     root: null,
     rootMargin: '-50%',
@@ -75,6 +79,33 @@ const PageActiveObserver = () => {
     }
   };
 
+  const [zoom, setZoom] = useState({
+    scale: 1,
+    translation: { x: 450, y: 0 },
+  });
+
+  console.log('zoom', zoom);
+  const zoomIn = () => {
+    console.log('zooin');
+    if (zoom.scale < 2.5) {
+      setZoom((prev) => ({
+        ...prev,
+        scale: prev.scale + 0.25,
+        translation: { ...prev.translation, x: prev.translation.x - 75 },
+      }));
+    }
+  };
+
+  const zoomOut = () => {
+    console.log('zooout');
+    if (zoom.scale > 0.5)
+      setZoom((prev) => ({
+        ...prev,
+        scale: prev.scale - 0.25,
+        translation: { ...prev.translation, x: prev.translation.x + 75 },
+      }));
+  };
+
   return (
     <div>
       <div className="w-full h-20 bg-gray-500 fixed top-0 left-0 z-10 "></div>
@@ -97,17 +128,44 @@ const PageActiveObserver = () => {
           ))}
         </div>
       </div>
-      <div className="flex flex-col justify-center items-center gap-10 mt-28">
-        {data?.map((item, index) => (
-          <div
-            className="border-[2px] border-gray-200 shadow-xl p-2"
-            key={item.id}
-            // @ts-ignore
-            ref={(el) => (containerRefs.current[index] = el)}
+
+      <div className="flex flex-col justify-center items-center gap-10 mt-28 relative">
+        <div className="text-3xl">
+          <button
+            onClick={zoomOut}
+            className="bg-blue-500 text-white px-5 rounded-md "
           >
-            <img src={item.image} />
-          </div>
-        ))}
+            -
+          </button>
+          <span className="mx-5">{zoom.scale * 100}%</span>
+          <button
+            className="bg-blue-500 text-white px-5 rounded-md "
+            onClick={zoomIn}
+          >
+            +
+          </button>
+        </div>
+        <div className="w-[80vw] border-gray-500 border-[2px]">
+          <MapInteractionCSS
+            value={zoom}
+            onChange={(value: any) => setZoom({ ...value })}
+            disableZoom={true}
+            disablePan={true}
+            minScale={0.5}
+            maxScale={2.5}
+          >
+            {data?.map((item, index) => (
+              <div
+                className="border-[2px] border-gray-200 shadow-xl p-2 mb-4"
+                key={item.id}
+                // @ts-ignore
+                ref={(el) => (containerRefs.current[index] = el)}
+              >
+                <img src={item.image} />
+              </div>
+            ))}
+          </MapInteractionCSS>
+        </div>
       </div>
     </div>
   );
